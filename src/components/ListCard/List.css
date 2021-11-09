@@ -1,0 +1,17 @@
+.divList {
+  float: 'left';
+  background: '#f5f5f5';
+  width: 40vw;
+  max-height: '650px';
+  scrollbar-width: 'none';
+  overflow-y: 'scroll';
+  border: '1px solid black';
+  align-content: 'center';
+  -ms-overflow-style: none; /* for Internet Explorer, Edge */
+  scrollbar-width: none; /* for Firefox */
+  overflow-y: scroll;
+}
+
+div::-webkit-scrollbar {
+  display: none; /* for Chrome, Safari, and Opera */
+}

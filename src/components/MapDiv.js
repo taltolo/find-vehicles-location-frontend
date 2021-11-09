@@ -1,123 +1,168 @@
 /*global google*/
 import React, { Component } from 'react';
-import {
-  withGoogleMap,
-  GoogleMap,
-  Marker,
-  Polyline,
-  Circle,
-  Rectangle,
-  Polygon,
-} from 'react-google-maps';
+import { withGoogleMap, GoogleMap, Marker, Polygon } from 'react-google-maps';
 import { DrawingManager } from 'react-google-maps/lib/components/drawing/DrawingManager';
+import pointInPolygon from 'point-in-polygon';
+import List from './ListCard/List';
+import './MapDiv.css';
 
 class MapDiv extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
+      vehicles: '',
+      vehicles_data: '',
       drawingControlEnabled: true,
-      marker: null,
-      polyline: null,
-      circleRadius: null,
-      circleCenter: null,
-      rectangle: null,
       polygon: null,
-      visible: true,
+      insidePolygon: [],
     };
+  }
+
+  componentDidMount() {
+    if (!this.state.vehicles) this.vehicles_location_list();
+    if (this.state.insidePolygon.length !== 0)
+      this.displayMarkers(this.state.insidePolygon);
   }
 
   overlay = (e) => {
     this.setState({
       drawingControlEnabled: false,
     });
-    console.log(e);
-    switch (e.type) {
-      case 'marker':
-        this.setState({
-          marker: {
-            lat: e.overlay.getPosition().lat(),
-            lng: e.overlay.getPosition().lng(),
-          },
-        });
-        break;
-      case 'polyline':
-        this.setState({
-          polyline: e.overlay.getPath(),
-        });
-        break;
-      case 'circle':
-        this.setState({
-          circleRadius: e.overlay.getRadius(),
-          circleCenter: e.overlay.getCenter(),
-        });
-        break;
-      case 'rectangle':
-        this.setState({
-          rectangle: e.overlay.getBounds(),
-        });
 
-        break;
-      case 'polygon':
-        console.log(e.overlay.getPaths().getArray());
-        this.setState({
-          polygon: e.overlay.getPaths().getArray(),
-        });
-        console.log(this.state.polygon);
-
-        break;
-    }
+    this.setState({
+      polygon: e.overlay.getPaths().getArray(),
+    });
+    this.isInsaidPolygon();
   };
+
+  vehicles_location_list() {
+    fetch('http://localhost:3000/vehicles')
+      .then((response) => response.json())
+      .then((data) => this.setState({ vehicles: data }))
+      .catch((err) => {
+        throw new Error(err);
+      });
+    console.log(this.state.vehicles);
+  }
+
+  vehicles_list_in_polygon() {
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ location: this.state.insidePolygon }),
+    };
+    fetch('http://localhost:3000/vehicles', requestOptions)
+      .then((response) => response.json())
+      .then((data) => this.setState({ vehicles_data: data }))
+      .catch((err) => {
+        throw new Error(err);
+      });
+
+    console.log(this.state.vehicles_data.length);
+  }
+
+  isInsaidPolygon = () => {
+    let inPoloygon = [];
+    let polygoncoord = this.buildPolygonCoord();
+    this.state.vehicles.map((vehicle, index) => {
+      let pair = this.buildPoint(index);
+      var isInPolo = pointInPolygon(pair, polygoncoord);
+      if (isInPolo) {
+        inPoloygon.push(vehicle);
+      }
+    });
+    this.setState({ insidePolygon: inPoloygon });
+    console.log(this.state.insidePolygon);
+    this.vehicles_list_in_polygon();
+  };
+
+  buildPoint = (i) => {
+    let lat = this.state.vehicles[i].lat;
+    let lng = this.state.vehicles[i].lng;
+    return [lat, lng];
+  };
+
+  buildPolygonCoord = () => {
+    let polygoncoord = [];
+    for (let i = 0; i < this.state.polygon[0].td.length; i++) {
+      let lat = this.state.polygon[0].td[i].lat();
+      let lng = this.state.polygon[0].td[i].lng();
+      polygoncoord.push([lat, lng]);
+    }
+    return polygoncoord;
+  };
+
+  displayMarkers = (vehicles) => {
+    return vehicles.map((vehicle, index) => {
+      return (
+        <Marker
+          key={index}
+          id={index}
+          position={{
+            lat: vehicle.lat,
+            lng: vehicle.lng,
+          }}
+          onClick={() =>
+            console.log('You clicked :' + vehicle.lat + ', ' + vehicle.lng)
+          }
+        />
+      );
+    });
+  };
+
   render() {
-    const GoogleMapExample = withGoogleMap((props) => (
+    const GoogleMapContainer = withGoogleMap((props) => (
       <GoogleMap
         defaultCenter={{ lat: 51.4694976807, lng: -0.0493916683 }}
-        defaultZoom={10}
+        defaultZoom={12}
       >
+        {this.state.vehicles.length > 0
+          ? this.displayMarkers(this.state.insidePolygon)
+          : null}
         <DrawingManager
           onOverlayComplete={this.overlay}
           defaultOptions={{
             drawingControlOptions: {
               position: window.google.maps.ControlPosition.TOP_CENTER,
-              drawingModes: [
-                // window.google.maps.drawing.OverlayType.CIRCLE,
-                google.maps.drawing.OverlayType.POLYGON,
-                // window.google.maps.drawing.OverlayType.POLYLINE,
-                // window.google.maps.drawing.OverlayType.RECTANGLE,
-              ],
+              drawingModes: [google.maps.drawing.OverlayType.POLYGON],
             },
           }}
-          //   options={{
-          //     drawingControl: this.state.drawingControlEnabled,
-          //   }}
         />
 
-        {this.state.marker !== null && <Marker position={this.state.marker} />}
-
-        {this.state.polyline !== null && (
-          <Polyline path={this.state.polyline} />
-        )}
-        {this.state.circleRadius !== null && (
-          <Circle
-            radius={this.state.circleRadius}
-            center={this.state.circleCenter}
-            visible={this.state.visible}
-          />
-        )}
-
-        {this.state.rectangle !== null && (
-          <Rectangle bounds={this.state.rectangle} />
-        )}
         {this.state.polygon !== null && <Polygon paths={this.state.polygon} />}
       </GoogleMap>
     ));
 
     return (
       <div>
-        <GoogleMapExample
-          containerElement={<div style={{ height: `500px`, width: '500px' }} />}
+        <GoogleMapContainer
+          containerElement={
+            <div
+              style={{
+                height: '650px',
+                width: '1000px',
+                placeContent: 'center',
+                position: 'absolute',
+                right: '0px',
+                display: 'block',
+                border: '1px solid black',
+              }}
+            />
+          }
           mapElement={<div style={{ height: `100%` }} />}
         />
+        {this.state.vehicles_data ? (
+          <List data={this.state.vehicles_data} />
+        ) : (
+          <div className="divP">
+            <p className="pData">
+              Draw a polygon on the map to see the vehicles locations
+            </p>
+          </div>
+        )}
       </div>
     );
   }

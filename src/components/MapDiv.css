@@ -1,0 +1,18 @@
+.divP {
+  display: flex;
+  flex-direction: row;
+  max-width: 35vw;
+  max-height: 650px;
+  justify-content: center;
+  float: left;
+  border-top: 1px solid black;
+}
+.pData {
+  text-align: center;
+  font-size: 35px;
+  font-weight: bold;
+  padding: 5px;
+  white-space: pre-line;
+  text-align: center;
+  margin: 40px;
+}
