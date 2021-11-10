@@ -4,9 +4,10 @@ import { withScriptjs } from 'react-google-maps';
 import './App.css';
 
 function App() {
+  const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
   const googleScript =
     'https://maps.googleapis.com/maps/api/js?key=' +
-    process.env.REACT_APP_GOOGLE_API_KEY +
+    API_KEY +
     '&libraries=drawing';
   const MapLoader = withScriptjs(MapDiv);
   return (
