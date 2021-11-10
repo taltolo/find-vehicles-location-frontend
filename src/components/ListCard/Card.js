@@ -1,9 +1,10 @@
 import React from 'react';
 import './Card.css';
+import { AiOutlineCar } from 'react-icons/ai';
 
 const Card = ({ data }) => {
   return data
-    ? data.map((vehicle, index) => {
+    ? data?.map((vehicle, index) => {
         return (
           <div
             className="card"
@@ -12,8 +13,13 @@ const Card = ({ data }) => {
             }}
           >
             <div className="card_body">
-              <h1 className="card_title">VEHICLE {index + 1}</h1>
-              <h3>id : {vehicle.id}</h3>
+              <div className="div_title">
+                <div>
+                  <AiOutlineCar className="icon_car" />
+                </div>
+                <h1 className="card_title">VEHICLE {index + 1}</h1>
+              </div>
+              <p className="card_p">id : {vehicle.id}</p>
               <p className="card_p">state : {vehicle.state}</p>
             </div>
           </div>

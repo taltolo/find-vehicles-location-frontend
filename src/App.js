@@ -1,15 +1,19 @@
 import Header from './components/Header/Header';
-import MapDiv from './components/MapDiv';
+import MapDiv from './components/MapContainer/MapDiv';
 import { withScriptjs } from 'react-google-maps';
 import './App.css';
 
 function App() {
+  const googleScript =
+    'https://maps.googleapis.com/maps/api/js?key=' +
+    process.env.REACT_APP_GOOGLE_API_KEY +
+    '&libraries=drawing';
   const MapLoader = withScriptjs(MapDiv);
   return (
     <div className="App">
       <Header />
       <MapLoader
-        googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_BwmDUw9--wceNDCYBH2Dr8gjvI7E9aM&libraries=drawing"
+        googleMapURL={googleScript}
         loadingElement={<div style={{ height: `100%` }} />}
       />
     </div>

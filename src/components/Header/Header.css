@@ -6,11 +6,24 @@
   font-family: ui-rounded;
   display: flex;
   justify-content: center;
-  align-items: baseline;
+  align-items: center;
   background: '#f5f5f5';
   color: #000;
 }
+.gradient-text {
+  background-color: #ffff;
+  background-image: linear-gradient(45deg, #ff4500, #00ff00);
+  background-size: 100%;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+}
+.div_icon {
+  align-self: inherit;
+  margin: 10px;
+}
 .icon {
-  font-size: 40px;
+  font-size: 35px;
   color: #ff4500;
 }

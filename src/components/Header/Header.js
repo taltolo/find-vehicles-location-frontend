@@ -4,11 +4,10 @@ import { FaMapMarkedAlt } from 'react-icons/fa';
 
 const Header = () => (
   <div className="Title">
-    <div style={{ margin: '5px' }}>
+    <div className="div_icon">
       <FaMapMarkedAlt className="icon" />
     </div>
-
-    <h1>Find Your Vehicles Location</h1>
+    <h1 className="gradient-text">Find Your Vehicles Location</h1>
   </div>
 );
 export default Header;

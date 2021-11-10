@@ -3,18 +3,24 @@ import React, { Component } from 'react';
 import { withGoogleMap, GoogleMap, Marker, Polygon } from 'react-google-maps';
 import { DrawingManager } from 'react-google-maps/lib/components/drawing/DrawingManager';
 import pointInPolygon from 'point-in-polygon';
-import List from './ListCard/List';
+import List from '../ListCard/List';
 import './MapDiv.css';
 
 class MapDiv extends Component {
   constructor(props) {
     super(props);
+    this.googleMap = React.createRef();
     this.state = {
       vehicles: '',
       vehicles_data: '',
       drawingControlEnabled: true,
       polygon: null,
       insidePolygon: [],
+      zoom: 10,
+      center: {
+        latitude: 51.5142089,
+        longitude: -0.1275862,
+      },
     };
   }
 
@@ -24,28 +30,32 @@ class MapDiv extends Component {
       this.displayMarkers(this.state.insidePolygon);
   }
 
+  //After drawing the polygon fetching the coordinates
   overlay = (e) => {
     this.setState({
       drawingControlEnabled: false,
     });
-
     this.setState({
       polygon: e.overlay.getPaths().getArray(),
     });
     this.isInsaidPolygon();
   };
 
-  vehicles_location_list() {
-    fetch('http://localhost:3000/vehicles')
-      .then((response) => response.json())
-      .then((data) => this.setState({ vehicles: data }))
-      .catch((err) => {
-        throw new Error(err);
-      });
-    console.log(this.state.vehicles);
+  //Fetch all vehicles location from the backend
+  async vehicles_location_list() {
+    try {
+      const response = await fetch('http://localhost:3000/vehicles');
+      if (response) {
+        const data = await response.json();
+        this.setState({ vehicles: data });
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  vehicles_list_in_polygon() {
+  //Fetch the data of the vehicles in the polygon
+  async vehicles_list_in_polygon() {
     const requestOptions = {
       method: 'POST',
       headers: {
@@ -54,16 +64,21 @@ class MapDiv extends Component {
       },
       body: JSON.stringify({ location: this.state.insidePolygon }),
     };
-    fetch('http://localhost:3000/vehicles', requestOptions)
-      .then((response) => response.json())
-      .then((data) => this.setState({ vehicles_data: data }))
-      .catch((err) => {
-        throw new Error(err);
-      });
-
-    console.log(this.state.vehicles_data.length);
+    try {
+      const response = await fetch(
+        'http://localhost:3000/vehicles',
+        requestOptions
+      );
+      if (response) {
+        const data = await response.json();
+        this.setState({ vehicles_data: data });
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
+  //Check which vehicle loction in in the polygon
   isInsaidPolygon = () => {
     let inPoloygon = [];
     let polygoncoord = this.buildPolygonCoord();
@@ -75,7 +90,6 @@ class MapDiv extends Component {
       }
     });
     this.setState({ insidePolygon: inPoloygon });
-    console.log(this.state.insidePolygon);
     this.vehicles_list_in_polygon();
   };
 
@@ -105,19 +119,57 @@ class MapDiv extends Component {
             lat: vehicle.lat,
             lng: vehicle.lng,
           }}
-          onClick={() =>
-            console.log('You clicked :' + vehicle.lat + ', ' + vehicle.lng)
-          }
         />
       );
     });
   };
 
+  // Updata and save the center
+  onIdle = () => {
+    const center = this.state.center;
+    const newCenter = this.googleMap.current.getCenter();
+    const centerLng = newCenter.lng();
+    const centerLat = newCenter.lat();
+    if (center.latitude !== centerLat || center.longitude !== centerLng) {
+      this.setState({
+        center: {
+          latitude: centerLat,
+          longitude: centerLng,
+        },
+      });
+    }
+  };
+
+  onZoomChanged = () => {
+    const newCenter = this.googleMap.current.getCenter();
+    this.setState({
+      zoom: this.googleMap.current.getZoom(),
+      center: {
+        latitude: newCenter.lat(),
+        longitude: newCenter.lng(),
+      },
+    });
+  };
   render() {
     const GoogleMapContainer = withGoogleMap((props) => (
       <GoogleMap
-        defaultCenter={{ lat: 51.4694976807, lng: -0.0493916683 }}
-        defaultZoom={12}
+        defaultCenter={{
+          lat: this.state.center.latitude,
+          lng: this.state.center.longitude,
+        }}
+        onIdle={this.onIdle}
+        zoom={this.state.zoom}
+        ref={this.googleMap}
+        onZoomChanged={this.onZoomChanged}
+        defaultOptions={{
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+            mapTypeIds: ['roadmap', 'terrain'],
+          },
+
+          streetViewControl: false,
+        }}
       >
         {this.state.vehicles.length > 0
           ? this.displayMarkers(this.state.insidePolygon)
@@ -139,22 +191,10 @@ class MapDiv extends Component {
     return (
       <div>
         <GoogleMapContainer
-          containerElement={
-            <div
-              style={{
-                height: '650px',
-                width: '1000px',
-                placeContent: 'center',
-                position: 'absolute',
-                right: '0px',
-                display: 'block',
-                border: '1px solid black',
-              }}
-            />
-          }
+          containerElement={<div className="div_map" />}
           mapElement={<div style={{ height: `100%` }} />}
         />
-        {this.state.vehicles_data ? (
+        {this.state.vehicles_data.length !== 0 ? (
           <List data={this.state.vehicles_data} />
         ) : (
           <div className="divP">

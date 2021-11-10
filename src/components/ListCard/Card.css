@@ -1,7 +1,7 @@
 .card {
   width: 52vh;
   height: 25vh;
-  border: 1px solid black;
+  border: 2px solid black;
   box-sizing: border-box;
   overflow: hidden;
   box-shadow: 0 2px 5px;
@@ -11,19 +11,29 @@
   transition: transform 200ms ease-in;
   margin: 40px;
   padding: 10px;
-  /* border-radius: 10px; */
 }
 .card:hover {
   transform: scale(1.02);
 }
+.div_title {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.icon_car {
+  font-size: 32px;
+  padding: 6px;
+}
 .card_title {
   padding: 0;
   margin: 0;
+  font-family: 'ui-rounded';
 }
 .h3 {
   padding: 0;
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
+  font-family: 'Avenir';
 }
 .card_p {
   font-family: 'Avenir';

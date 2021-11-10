@@ -1,9 +1,19 @@
+.div_map {
+  height: 650px;
+  width: 1000px;
+  place-content: center;
+  position: absolute;
+  right: 0px;
+  display: block;
+  border: 1px solid black;
+}
 .divP {
   display: flex;
   flex-direction: row;
   max-width: 35vw;
-  max-height: 650px;
+  height: 400px;
   justify-content: center;
+  align-items: center;
   float: left;
   border-top: 1px solid black;
 }
@@ -15,4 +25,5 @@
   white-space: pre-line;
   text-align: center;
   margin: 40px;
+  font-family: 'Avenir';
 }
