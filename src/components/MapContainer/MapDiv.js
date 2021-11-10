@@ -44,7 +44,9 @@ class MapDiv extends Component {
   //Fetch all vehicles location from the backend
   async vehicles_location_list() {
     try {
-      const response = await fetch('http://localhost:3000/vehicles');
+      const response = await fetch(
+        'https://find-vehicles-location-backend.herokuapp.com/'
+      );
       if (response) {
         const data = await response.json();
         this.setState({ vehicles: data });
@@ -66,7 +68,7 @@ class MapDiv extends Component {
     };
     try {
       const response = await fetch(
-        'http://localhost:3000/vehicles',
+        'https://find-vehicles-location-backend.herokuapp.com/',
         requestOptions
       );
       if (response) {
